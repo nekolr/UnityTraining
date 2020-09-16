@@ -1,0 +1,14 @@
+﻿[Idle]
+IdleToRun>Run
+IdleToJump>Jump
+
+[Run]
+RunToIdle>Idle
+RunToJump>Jump
+
+[Jump]
+JumpToFall>Fall
+
+[Fall]
+FallToIdle>Idle
+FallToRun>Run
