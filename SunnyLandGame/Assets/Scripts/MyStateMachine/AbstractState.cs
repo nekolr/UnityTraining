@@ -8,7 +8,14 @@
         /// <summary>
         /// 在状态中
         /// </summary>
-        public virtual void Execute()
+        public virtual void ExecuteByUpdate()
+        {
+        }
+
+        /// <summary>
+        /// 在状态中
+        /// </summary>
+        public virtual void ExecuteByFixedUpdate()
         {
         }
 

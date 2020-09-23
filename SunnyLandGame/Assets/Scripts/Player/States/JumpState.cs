@@ -1,51 +1,99 @@
-﻿using MyStateMachine;
+﻿using System.Collections.Generic;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
 {
     public class JumpState : AbstractState
     {
-        private PlayerEntry _playerEntry;
+        private readonly Animator _animator;
+        private readonly Rigidbody2D _rigidbody2D;
+        private readonly CapsuleCollider2D _capsuleCollider2D;
+        private readonly LayerMask _layerMask;
+        private readonly StateMachine _stateMachine;
+        private readonly Dictionary<StateID, AbstractState> _stateDictionary;
 
         public JumpState(PlayerEntry playerEntry)
         {
-            _playerEntry = playerEntry;
+            _animator = playerEntry.GetComponent<Animator>();
+            _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
+            _capsuleCollider2D = playerEntry.GetComponent<CapsuleCollider2D>();
+            _layerMask = playerEntry.layerMask;
+            _stateMachine = playerEntry.StateMachine;
+            _stateDictionary = playerEntry.StateDictionary;
         }
 
         public override void Enter()
         {
-            Animator animator = _playerEntry.GetComponent<Animator>();
-            animator.SetBool("isJump", true);
-            _playerEntry.isJump = true;
+            _animator.SetBool("isJump", true);
+            PlayerVariables.IsJump = true;
         }
 
-        public override void Execute()
+        public override void ExecuteByUpdate()
         {
-            var x = Input.GetAxis("Horizontal");
-            Rigidbody2D rigidbody2D = _playerEntry.GetComponent<Rigidbody2D>();
-            // 向右移动
-            if (x > 0)
-                // 朝向不变，因为默认这是默认朝向
-                rigidbody2D.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-            // 向左移动
-            if (x < 0)
-                rigidbody2D.transform.eulerAngles = new Vector3(0f, 180f, 0f);
-
-            // TODO: 由于在跳跃过程中，玩家可能会一直按着奔跑的按键，所以还要调用奔跑的方法
-            DoRun(rigidbody2D, x, 0, 0);
+            // 二段跳触发检测
+            DoubleJumpTrigger();
+            // 转换触发检测
+            TransitionTrigger();
+            // 跳动过程中的左右位移
+            Run();
         }
 
-        private void DoRun(Rigidbody2D rigidbody2D, float x, float y, float z)
+        private void DoubleJumpTrigger()
         {
-            // 这里使用 Vector3 而不使用 Vector2 是为了方便传值（不需要再进行转换）
-            Vector3 movement = new Vector3(x, y, z);
-            rigidbody2D.transform.position += _playerEntry.speed * Time.deltaTime * movement;
+            // 在跳跃状态下再次按跳跃
+            if (Input.GetButtonDown("Jump") && PlayerVariables.JumpCount < 2)
+            {
+                PlayerVariables.IsJump = true;
+            }
+        }
+
+        public override void ExecuteByFixedUpdate()
+        {
+            if (PlayerVariables.IsJump && PlayerVariables.JumpCount < 2)
+            {
+                Jump();
+                PlayerVariables.IsJump = false;
+                PlayerVariables.JumpCount++;
+            }
+        }
+
+        private void Jump()
+        {
+            // _rigidbody2D.AddForce(Vector2.up * PlayerVariables.JumpVelocity, ForceMode2D.Impulse);
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, PlayerVariables.JumpVelocity);
+        }
+
+        private void TransitionTrigger()
+        {
+            // 在下落过程中跳跃时，会从下落状态转换到跳跃状态，可能会出现虽然跳跃标记 IsJump 为 true，但是此时刚体的 y 轴速度小于 0
+            // 由于一般情况下 Update 的执行频率要高于 FixedUpdate，所以会导致还没有执行 FixedUpdate 中的方法就已经改变了状态为下落 
+            if (_rigidbody2D.velocity.y < 0 && !PlayerVariables.IsJump)
+            {
+                _stateMachine.ChangeState(_stateDictionary[StateID.Fall]);
+            }
+        }
+
+        private void Run()
+        {
+            float direction = Input.GetAxisRaw("Horizontal");
+            // 速度向量
+            _rigidbody2D.velocity = new Vector2(direction * PlayerVariables.Speed, _rigidbody2D.velocity.y);
+            if (direction != 0)
+            {
+                // 方向变换
+                _rigidbody2D.transform.localScale = new Vector3(direction, 1, 1);
+            }
+        }
+        
+        private bool IsOnTheGround()
+        {
+            return _capsuleCollider2D.IsTouchingLayers(_layerMask);
         }
 
         public override void Exit()
         {
-            Animator animator = _playerEntry.GetComponent<Animator>();
-            animator.SetBool("isJump", false);
+            _animator.SetBool("isJump", false);
         }
     }
 }

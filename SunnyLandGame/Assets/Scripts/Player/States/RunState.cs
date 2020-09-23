@@ -1,49 +1,74 @@
-﻿using MyStateMachine;
+﻿using System.Collections.Generic;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
 {
     public class RunState : AbstractState
     {
-        private PlayerEntry _playerEntry;
+        private readonly Animator _animator;
+        private readonly Rigidbody2D _rigidbody2D;
+        private readonly CapsuleCollider2D _capsuleCollider2D;
+        private readonly LayerMask _layerMask;
+        private readonly StateMachine _stateMachine;
+        private readonly Dictionary<StateID, AbstractState> _stateDictionary;
 
         public RunState(PlayerEntry playerEntry)
         {
-            _playerEntry = playerEntry;
+            _animator = playerEntry.GetComponent<Animator>();
+            _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
+            _capsuleCollider2D = playerEntry.GetComponent<CapsuleCollider2D>();
+            _layerMask = playerEntry.layerMask;
+            _stateMachine = playerEntry.StateMachine;
+            _stateDictionary = playerEntry.StateDictionary;
         }
 
         public override void Enter()
         {
-            Animator animator = _playerEntry.GetComponent<Animator>();
-            animator.SetBool("isRun", true);
+            _animator.SetBool("isRun", true);
+            // 重置跳跃次数
+            PlayerVariables.JumpCount = 0;
         }
 
-        public override void Execute()
+        public override void ExecuteByUpdate()
         {
-            float x = Input.GetAxis("Horizontal");
-            Rigidbody2D rigidbody2D = _playerEntry.GetComponent<Rigidbody2D>();
-
-            // 向右移动
-            if (x > 0)
-                // 朝向不变，因为默认这是默认朝向
-                rigidbody2D.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-            // 向左移动
-            if (x < 0)
-                rigidbody2D.transform.eulerAngles = new Vector3(0f, 180f, 0f);
-
-            DoRun(rigidbody2D, x, rigidbody2D.velocity.y, 0);
+            TransitionTrigger();
+            Run();
         }
 
-        private void DoRun(Rigidbody2D rigidbody2D, float x, float y, float z)
+        private void Run()
         {
-            Vector3 vector = new Vector3(x, y, z);
-            rigidbody2D.transform.position += vector * _playerEntry.speed * Time.deltaTime;
+            float direction = Input.GetAxisRaw("Horizontal");
+            // 速度向量
+            _rigidbody2D.velocity = new Vector2(direction * PlayerVariables.Speed, _rigidbody2D.velocity.y);
+            if (direction != 0)
+            {
+                // 方向变换
+                _rigidbody2D.transform.localScale = new Vector3(direction, 1, 1);
+            }
+        }
+
+        private void TransitionTrigger()
+        {
+            if (Input.GetAxisRaw("Horizontal") == 0)
+            {
+                _stateMachine.ChangeState(_stateDictionary[StateID.Idle]);
+            }
+
+            if (Input.GetAxisRaw("Horizontal") != 0 && Input.GetButtonDown("Jump") && IsOnTheGround())
+            {
+                _stateMachine.ChangeState(_stateDictionary[StateID.Jump]);
+            }
+        }
+        
+        private bool IsOnTheGround()
+        {
+            return _capsuleCollider2D.IsTouchingLayers(_layerMask);
         }
 
         public override void Exit()
         {
-            Animator animator = _playerEntry.GetComponent<Animator>();
-            animator.SetBool("isRun", false);
+            _animator.SetBool("isRun", false);
         }
     }
 }
