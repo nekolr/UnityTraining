@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MyStateMachine;
+﻿using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -8,19 +7,21 @@ namespace Player.States
     {
         private readonly Animator _animator;
         private readonly Rigidbody2D _rigidbody2D;
-        private readonly CapsuleCollider2D _capsuleCollider2D;
         private readonly LayerMask _layerMask;
-        private readonly StateMachine _stateMachine;
-        private readonly Dictionary<StateID, AbstractState> _stateDictionary;
+        private readonly Vector2 _playerSize;
+        private readonly Vector2 _boxSize;
+        private readonly Transform _transform;
 
-        public RunState(PlayerEntry playerEntry)
+        public RunState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
-            _capsuleCollider2D = playerEntry.GetComponent<CapsuleCollider2D>();
+            _transform = playerEntry.transform;
+            // 玩家精灵边框的大小
+            _playerSize = playerEntry.GetComponent<SpriteRenderer>().bounds.size;
+            // 碰撞检测盒子的大小，使用玩家的大小 40%，同时高度设置为 0.5
+            _boxSize = new Vector2(_playerSize.x * 0.4f, PlayerVariables.BoxHeight);
             _layerMask = playerEntry.layerMask;
-            _stateMachine = playerEntry.StateMachine;
-            _stateDictionary = playerEntry.StateDictionary;
         }
 
         public override void Enter()
@@ -50,25 +51,36 @@ namespace Player.States
 
         private void TransitionTrigger()
         {
+            var isOnTheGround = IsOnTheGround();
+            
             if (Input.GetAxisRaw("Horizontal") == 0)
             {
-                _stateMachine.ChangeState(_stateDictionary[StateID.Idle]);
+                StateMachine.ChangeState(StateDictionary[StateID.Idle]);
             }
 
-            if (Input.GetAxisRaw("Horizontal") != 0 && Input.GetButtonDown("Jump") && IsOnTheGround())
+            if (Input.GetAxisRaw("Horizontal") != 0 && Input.GetButtonDown("Jump") && isOnTheGround)
             {
-                _stateMachine.ChangeState(_stateDictionary[StateID.Jump]);
+                StateMachine.ChangeState(StateDictionary[StateID.Jump]);
+            }
+            
+            if (PlayerVariables.IsHurt)
+            {
+                StateMachine.ChangeState(StateDictionary[StateID.Hurt]);
+            }
+            
+            // 下坡路段不算下落状态
+            if (_rigidbody2D.velocity.y < 0 && !isOnTheGround)
+            {
+                StateMachine.ChangeState(StateDictionary[StateID.Fall]);
             }
         }
         
         private bool IsOnTheGround()
         {
-            return _capsuleCollider2D.IsTouchingLayers(_layerMask);
-        }
-
-        public override void Exit()
-        {
-            _animator.SetBool("isRun", false);
+            // 先将碰撞盒子的位置移动到玩家脚部位置
+            // transform.position 的位置是精灵的正中心，如果盒子移到这里是无法进行碰撞检测的，需要移动到脚部
+            Vector2 jumpBoxPosition = (Vector2) _transform.position + (Vector2.down * _playerSize * 0.5f);
+            return Physics2D.OverlapBox(jumpBoxPosition, _boxSize, 0, _layerMask) != null;
         }
     }
 }

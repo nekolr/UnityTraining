@@ -1,7 +1,4 @@
-﻿using Player;
-using UnityEngine;
-
-namespace MyStateMachine
+﻿namespace MyStateMachine
 {
     /// <summary>
     /// 有限状态机
@@ -11,7 +8,7 @@ namespace MyStateMachine
         /// <summary>
         /// 当前状态
         /// </summary>
-        public AbstractState CurrentState { get; private set; }
+        private AbstractState CurrentState { get; set; }
 
         /// <summary>
         /// 初始化
@@ -21,6 +18,22 @@ namespace MyStateMachine
         {
             CurrentState = startState;
             CurrentState.Enter();
+        }
+
+        /// <summary>
+        /// 在 Update 方法中执行
+        /// </summary>
+        public void ExecuteByUpdate()
+        {
+            CurrentState.ExecuteByUpdate();
+        }
+
+        /// <summary>
+        /// 在 FixedUpdate 方法中执行
+        /// </summary>
+        public void ExecuteByFixedUpdate()
+        {
+            CurrentState.ExecuteByFixedUpdate();
         }
 
         /// <summary>

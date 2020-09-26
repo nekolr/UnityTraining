@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MyStateMachine;
+﻿using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -8,19 +7,13 @@ namespace Player.States
     {
         private readonly Animator _animator;
         private readonly Rigidbody2D _rigidbody2D;
-        private readonly CapsuleCollider2D _capsuleCollider2D;
-        private readonly LayerMask _layerMask;
-        private readonly StateMachine _stateMachine;
-        private readonly Dictionary<StateID, AbstractState> _stateDictionary;
+        private readonly AudioSource _jumpAudioSource;
 
-        public JumpState(PlayerEntry playerEntry)
+        public JumpState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
-            _capsuleCollider2D = playerEntry.GetComponent<CapsuleCollider2D>();
-            _layerMask = playerEntry.layerMask;
-            _stateMachine = playerEntry.StateMachine;
-            _stateDictionary = playerEntry.StateDictionary;
+            _jumpAudioSource = playerEntry.jumpAudioSource;
         }
 
         public override void Enter()
@@ -60,7 +53,7 @@ namespace Player.States
 
         private void Jump()
         {
-            // _rigidbody2D.AddForce(Vector2.up * PlayerVariables.JumpVelocity, ForceMode2D.Impulse);
+            _jumpAudioSource.Play();
             _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, PlayerVariables.JumpVelocity);
         }
 
@@ -70,7 +63,7 @@ namespace Player.States
             // 由于一般情况下 Update 的执行频率要高于 FixedUpdate，所以会导致还没有执行 FixedUpdate 中的方法就已经改变了状态为下落 
             if (_rigidbody2D.velocity.y < 0 && !PlayerVariables.IsJump)
             {
-                _stateMachine.ChangeState(_stateDictionary[StateID.Fall]);
+                StateMachine.ChangeState(StateDictionary[StateID.Fall]);
             }
         }
 
@@ -84,11 +77,6 @@ namespace Player.States
                 // 方向变换
                 _rigidbody2D.transform.localScale = new Vector3(direction, 1, 1);
             }
-        }
-        
-        private bool IsOnTheGround()
-        {
-            return _capsuleCollider2D.IsTouchingLayers(_layerMask);
         }
 
         public override void Exit()

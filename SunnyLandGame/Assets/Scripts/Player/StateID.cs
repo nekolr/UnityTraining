@@ -23,6 +23,21 @@
         /// <summary>
         /// 下落
         /// </summary>
-        Fall
+        Fall,
+
+        /// <summary>
+        /// 受伤
+        /// </summary>
+        Hurt,
+
+        /// <summary>
+        /// 下蹲
+        /// </summary>
+        Crouch,
+
+        /// <summary>
+        /// 死亡
+        /// </summary>
+        Death
     }
 }
