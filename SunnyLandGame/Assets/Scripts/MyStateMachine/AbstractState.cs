@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MyStateMachine
 {
@@ -8,25 +7,25 @@ namespace MyStateMachine
     /// </summary>
     public abstract class AbstractState
     {
+        // /// <summary>
+        // /// 状态 ID
+        // /// </summary>
+        public Enum ID { get; }
+
         /// <summary>
         /// 状态机
         /// </summary>
         protected StateMachine StateMachine { get; }
 
         /// <summary>
-        /// 状态字典
-        /// </summary>
-        protected Dictionary<Enum, AbstractState> StateDictionary { get; }
-
-        /// <summary>
         /// 构造器
         /// </summary>
+        /// <param name="stateID">状态 ID</param>
         /// <param name="stateMachine">状态机</param>
-        /// <param name="stateDictionary">状态字典</param>
-        protected AbstractState(StateMachine stateMachine, Dictionary<Enum, AbstractState> stateDictionary)
+        protected AbstractState(Enum stateID, StateMachine stateMachine)
         {
+            ID = stateID;
             StateMachine = stateMachine;
-            StateDictionary = stateDictionary;
         }
 
         /// <summary>

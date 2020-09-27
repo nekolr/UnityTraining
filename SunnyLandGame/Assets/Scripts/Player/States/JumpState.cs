@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -9,7 +10,7 @@ namespace Player.States
         private readonly Rigidbody2D _rigidbody2D;
         private readonly AudioSource _jumpAudioSource;
 
-        public JumpState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
+        public JumpState(Enum stateID, PlayerEntry playerEntry) : base(stateID, playerEntry.StateMachine)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
@@ -63,7 +64,7 @@ namespace Player.States
             // 由于一般情况下 Update 的执行频率要高于 FixedUpdate，所以会导致还没有执行 FixedUpdate 中的方法就已经改变了状态为下落 
             if (_rigidbody2D.velocity.y < 0 && !PlayerVariables.IsJump)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Fall]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Fall]);
             }
         }
 

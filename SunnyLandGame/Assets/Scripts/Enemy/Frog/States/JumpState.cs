@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Enemy.Frog.States
@@ -27,7 +28,7 @@ namespace Enemy.Frog.States
 
         private bool _isJump;
 
-        public JumpState(FrogEntry enemyEntry) : base(enemyEntry.StateMachine, enemyEntry.StateDictionary)
+        public JumpState(Enum stateID, FrogEntry enemyEntry) : base(stateID, enemyEntry.StateMachine)
         {
             _animator = enemyEntry.GetComponent<Animator>();
             _rigidbody2D = enemyEntry.GetComponent<Rigidbody2D>();
@@ -86,7 +87,7 @@ namespace Enemy.Frog.States
         {
             if (_rigidbody2D.velocity.y < 0)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Fall]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[FrogStateID.Fall]);
             }
         }
 

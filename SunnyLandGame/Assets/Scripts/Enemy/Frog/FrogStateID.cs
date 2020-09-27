@@ -1,6 +1,6 @@
 ﻿namespace Enemy.Frog
 {
-    public enum StateID
+    public enum FrogStateID
     {
         /// <summary>
         /// 静止

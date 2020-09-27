@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -12,7 +13,7 @@ namespace Player.States
         private readonly Transform _transform;
         private readonly LayerMask _layerMask;
 
-        public FallState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
+        public FallState(Enum stateID, PlayerEntry playerEntry) : base(stateID, playerEntry.StateMachine)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
@@ -39,23 +40,23 @@ namespace Player.States
         {
             var isOnTheGround = IsOnTheGround();
             var direction = Input.GetAxisRaw("Horizontal");
-            
+
             if (direction == 0f && isOnTheGround)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Idle]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Idle]);
             }
 
             if (direction != 0f && isOnTheGround)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Run]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Run]);
             }
 
             if (Input.GetButtonDown("Jump") && PlayerVariables.JumpCount < 2)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Jump]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Jump]);
             }
         }
-        
+
         private bool IsOnTheGround()
         {
             // 先将碰撞盒子的位置移动到玩家脚部位置

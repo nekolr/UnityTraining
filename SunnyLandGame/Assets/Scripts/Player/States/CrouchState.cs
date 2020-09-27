@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -12,7 +13,7 @@ namespace Player.States
         private readonly Transform _headPoint;
         private readonly LayerMask _layerMask;
 
-        public CrouchState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
+        public CrouchState(Enum stateID, PlayerEntry playerEntry) : base(stateID, playerEntry.StateMachine)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _optionBoxCollider2D = playerEntry.GetComponent<BoxCollider2D>();
@@ -34,7 +35,7 @@ namespace Player.States
             // 以头部检测点为圆心，画一个半径为 0.2 像素的圆，只要 **指定图层上** 的碰撞体在圆内就为 true
             if (!Input.GetButton("Crouch") && !Physics2D.OverlapCircle(_headPoint.position, 0.2f, _layerMask))
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Idle]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Idle]);
             }
         }
         

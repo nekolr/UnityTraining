@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Enemy.Frog.States
@@ -9,7 +10,7 @@ namespace Enemy.Frog.States
         private readonly CapsuleCollider2D _capsuleCollider2D;
         private readonly LayerMask _layerMask;
 
-        public FallState(FrogEntry enemyEntry) : base(enemyEntry.StateMachine, enemyEntry.StateDictionary)
+        public FallState(Enum stateID, FrogEntry enemyEntry) : base(stateID, enemyEntry.StateMachine)
         {
             _animator = enemyEntry.GetComponent<Animator>();
             _capsuleCollider2D = enemyEntry.GetComponent<CapsuleCollider2D>();
@@ -30,7 +31,7 @@ namespace Enemy.Frog.States
         {
             if (IsOnTheGround())
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Idle]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[FrogStateID.Idle]);
             }
         }
 

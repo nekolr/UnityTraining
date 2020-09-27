@@ -1,4 +1,7 @@
-﻿namespace MyStateMachine
+﻿using System;
+using System.Collections.Generic;
+
+namespace MyStateMachine
 {
     /// <summary>
     /// 有限状态机
@@ -8,7 +11,12 @@
         /// <summary>
         /// 当前状态
         /// </summary>
-        private AbstractState CurrentState { get; set; }
+        public AbstractState CurrentState { get; private set; }
+
+        /// <summary>
+        /// 状态字典
+        /// </summary>
+        public Dictionary<Enum, AbstractState> StateDictionary { get; private set; }
 
         /// <summary>
         /// 初始化
@@ -50,6 +58,17 @@
             CurrentState = state;
             // 进入状态时调用
             CurrentState.Enter();
+        }
+
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="state">状态类</param>
+        public void AddState(AbstractState state)
+        {
+            if (StateDictionary == null)
+                StateDictionary = new Dictionary<Enum, AbstractState>();
+            StateDictionary.Add(state.ID, state);
         }
     }
 }

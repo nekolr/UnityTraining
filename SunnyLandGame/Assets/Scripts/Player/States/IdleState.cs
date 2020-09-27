@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -11,7 +12,7 @@ namespace Player.States
         private readonly Transform _transform;
         private readonly LayerMask _layerMask;
 
-        public IdleState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
+        public IdleState(Enum stateID, PlayerEntry playerEntry) : base(stateID, playerEntry.StateMachine)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _transform = playerEntry.transform;
@@ -38,22 +39,22 @@ namespace Player.States
         {
             if (Input.GetAxisRaw("Horizontal") != 0f)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Run]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Run]);
             }
 
             if (Input.GetButtonDown("Jump") && IsOnTheGround())
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Jump]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Jump]);
             }
             
             if (PlayerVariables.IsHurt)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Hurt]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Hurt]);
             }
 
             if (Input.GetButton("Crouch"))
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Crouch]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Crouch]);
             }
         }
         

@@ -1,4 +1,5 @@
-﻿using MyStateMachine;
+﻿using System;
+using MyStateMachine;
 using UnityEngine;
 
 namespace Player.States
@@ -12,7 +13,7 @@ namespace Player.States
         private readonly Vector2 _boxSize;
         private readonly Transform _transform;
 
-        public RunState(PlayerEntry playerEntry) : base(playerEntry.StateMachine, playerEntry.StateDictionary)
+        public RunState(Enum stateID, PlayerEntry playerEntry) : base(stateID, playerEntry.StateMachine)
         {
             _animator = playerEntry.GetComponent<Animator>();
             _rigidbody2D = playerEntry.GetComponent<Rigidbody2D>();
@@ -55,23 +56,23 @@ namespace Player.States
             
             if (Input.GetAxisRaw("Horizontal") == 0)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Idle]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Idle]);
             }
 
             if (Input.GetAxisRaw("Horizontal") != 0 && Input.GetButtonDown("Jump") && isOnTheGround)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Jump]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Jump]);
             }
             
             if (PlayerVariables.IsHurt)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Hurt]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Hurt]);
             }
             
             // 下坡路段不算下落状态
             if (_rigidbody2D.velocity.y < 0 && !isOnTheGround)
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Fall]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[StateID.Fall]);
             }
         }
         

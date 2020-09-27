@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using MyStateMachine;
 using UnityEngine;
 using Utils;
@@ -10,7 +11,7 @@ namespace Enemy.Frog.States
         private readonly CapsuleCollider2D _capsuleCollider2D;
         private readonly LayerMask _layerMask;
 
-        public IdleState(FrogEntry enemyEntry) : base(enemyEntry.StateMachine, enemyEntry.StateDictionary)
+        public IdleState(Enum stateID, FrogEntry enemyEntry) : base(stateID, enemyEntry.StateMachine)
         {
             _capsuleCollider2D = enemyEntry.GetComponent<CapsuleCollider2D>();
             _layerMask = enemyEntry.layerMask;
@@ -26,7 +27,7 @@ namespace Enemy.Frog.States
             yield return new WaitForSeconds(0.5f);
             if (IsOnTheGround())
             {
-                StateMachine.ChangeState(StateDictionary[StateID.Jump]);
+                StateMachine.ChangeState(StateMachine.StateDictionary[FrogStateID.Jump]);
             }
         }
 
